@@ -1,0 +1,52 @@
+Abkürzung,Ausgeschrieben,Erklärung,Datei
+
+--- main.c ---
+ISR,Interrupt Service Routine,Funktion di   e automatisch bei einem Interrupt aufgerufen wird,main.c
+INT,External Interrupt,Externer Hardware-Interrupt — z.B. INT0 = Interrupt an Pin PD2,main.c
+ISC,Interrupt Sense Control,Bits die festlegen wann ein Interrupt auslöst (Flanke oder Pegel),main.c
+CTC,Clear Timer on Compare,Timer-Modus — Timer zählt bis Vergleichswert dann zurück auf 0,main.c
+WGM,Waveform Generation Mode,Bestimmt den Betriebsmodus des Timers (z.B. PWM oder CTC),main.c
+CS,Clock Select,Prescaler-Einstellung — bestimmt wie schnell der Timer zählt,main.c
+PD,Port D,Pin-Gruppe D des ATmega328P — z.B. PD2 = Port D Pin 2,main.c
+uint8_t,Unsigned Integer 8-bit,Ganzzahl ohne Vorzeichen — Wertebereich 0 bis 255,main.c
+uint16_t,Unsigned Integer 16-bit,Ganzzahl ohne Vorzeichen — Wertebereich 0 bis 65535,main.c
+int16_t,Signed Integer 16-bit,Ganzzahl mit Vorzeichen — Wertebereich -32768 bis 32767,main.c
+volatile,-(C Schlüsselwort),Verhindert Compiler-Optimierung — nötig für Variablen die in einer ISR geändert werden,main.c
+F_CPU,CPU Frequency,Taktfrequenz des Prozessors — hier 16.000.000 Hz = 16 MHz,main.c
+
+--- motors.c ---
+FL,Front Left,Motor vorne links am Auto,motors.c
+RL,Rear Left,Motor hinten links am Auto,motors.c
+FR,Front Right,Motor vorne rechts am Auto,motors.c
+RR,Rear Right,Motor hinten rechts am Auto,motors.c
+IN1,Input 1,Richtungspin 1 des Motortreibers,motors.c
+IN2,Input 2,Richtungspin 2 — Kombination IN1/IN2 bestimmt Fahrtrichtung,motors.c
+IN3,Input 3,Richtungspin 1 für rechte Motoren,motors.c
+IN4,Input 4,Richtungspin 2 für rechte Motoren,motors.c
+ENA,Enable A,PWM-Eingang Motortreiber links — steuert Geschwindigkeit,motors.c
+ENB,Enable B,PWM-Eingang Motortreiber rechts — steuert Geschwindigkeit,motors.c
+PWM,Pulse Width Modulation,Pulsweitenmodulation — steuert Motorgeschwindigkeit über An/Aus-Verhältnis,motors.c
+OC,Output Compare,Hardware-PWM Ausgangspin der direkt vom Timer gesteuert wird,motors.c
+PB,Port B,Pin-Gruppe B des ATmega328P — z.B. PB1 = Port B Pin 1,motors.c
+PC,Port C,Pin-Gruppe C des ATmega328P — z.B. PC0 = Port C Pin 0,motors.c
+COM,Compare Output Mode,Bestimmt wie der PWM-Ausgang auf einen Compare Match reagiert,motors.c
+L298N,-(Produktname),Modellbezeichnung des Motortreiber-Chips,motors.c
+API,Application Programming Interface,Öffentliche Funktionen die von anderen Dateien aufgerufen werden,motors.c
+
+--- sensors.c ---
+TRIG,Trigger,Ausgangspin — sendet den Ultraschallimpuls aus,sensors.c
+ECHO,Echo,Eingangspin — empfängt das zurückgeworfene Ultraschallsignal,sensors.c
+HC-SR04,-(Produktname),Modellbezeichnung des Ultraschall-Distanzsensors,sensors.c
+GPIO,General Purpose Input Output,Universeller Ein-/Ausgangspin ohne spezielle Funktion,sensors.c
+
+--- wifi.c ---
+UART,Universal Asynchronous Receiver Transmitter,Serielle Schnittstelle für Datenaustausch zwischen ESP32 und AVR,wifi.c
+USART,Universal Synchronous Asynchronous Receiver Transmitter,AVR nennt seine serielle Schnittstelle intern USART — ist eine Erweiterung von UART,wifi.c
+RX,Receive,Empfangen — der Pin der Daten entgegennimmt,wifi.c
+TX,Transmit,Senden — der Pin der Daten sendet,wifi.c
+FE,Framing Error,Fehler — Stopbit fehlt (z.B. falsche Baudrate oder Verbindungsproblem),wifi.c
+DOR,Data OverRun,Fehler — Byte ging verloren weil der Empfangspuffer voll war,wifi.c
+UPE,USART Parity Error,Fehler — Paritätsfehler beim Empfang (Datenverfälschung),wifi.c
+ESP32,-(Produktname),Mikrocontroller mit WLAN — sendet Steuerbefehle an den AVR,wifi.c
+AVR,Alf-Egil Bogen Vegard Wollan RISC,Mikrocontroller-Familie von Atmel — hier der ATmega328P,wifi.c
+ATmega328P,-(Produktname),Spezifischer AVR Mikrocontroller auf dem Arduino Uno,wifi.c

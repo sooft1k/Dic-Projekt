@@ -1,0 +1,70 @@
+Befehl,Beispiel im Code,Was es macht,Datei
+
+--- main.c — avr/io.h ---
+DDRD,DDRD &= ~(1 << PD2),Setzt Pin PD2 als INPUT — wird für den Mode-Taster verwendet,main.c
+PORTD,PORTD |= (1 << PD2),Aktiviert internen Pull-Up Widerstand an PD2 damit der Pin im Ruhezustand HIGH ist,main.c
+PIND,PIND & (1 << PD2),Liest den aktuellen Zustand von Pin PD2 — 0 = LOW = Taster gedrückt,main.c
+TCCR0A,TCCR0A = (1 << WGM01),Stellt Timer0 auf CTC-Modus — Timer zählt bis OCR0A dann zurück auf 0,main.c
+TCCR0B,"TCCR0B = (1 << CS01) | (1 << CS00)",Stellt Prescaler 64 für Timer0 ein — bei 16MHz ergibt das 250.000 Ticks pro Sekunde,main.c
+OCR0A,OCR0A = 249,Timer0 löst Interrupt aus wenn er 249 erreicht — ergibt genau 1ms Takt,main.c
+TIMSK0,TIMSK0 = (1 << OCIE0A),Aktiviert den Compare-Interrupt von Timer0,main.c
+WGM01,TCCR0A = (1 << WGM01),Waveform Generation Mode Bit — aktiviert CTC-Modus bei Timer0,main.c
+CS01,TCCR0B = (1 << CS01),Clock Select Bit 1 — Teil der Prescaler 64 Einstellung,main.c
+CS00,TCCR0B = (1 << CS00),Clock Select Bit 0 — Teil der Prescaler 64 Einstellung,main.c
+OCIE0A,TIMSK0 = (1 << OCIE0A),Output Compare Interrupt Enable — erlaubt Timer0 Compare-Interrupt,main.c
+EICRA,EICRA |= (1 << ISC01),Konfiguriert INT0 auf fallende Flanke — Interrupt wenn PD2 von HIGH auf LOW geht,main.c
+EIMSK,EIMSK |= (1 << INT0),Aktiviert den externen Interrupt INT0 an Pin PD2,main.c
+ISC01,EICRA |= (1 << ISC01),Interrupt Sense Control Bit — stellt fallende Flanke für INT0 ein,main.c
+INT0,EIMSK |= (1 << INT0),External Interrupt 0 — der Interrupt an Pin PD2,main.c
+
+--- main.c — avr/interrupt.h ---
+sei,sei(),Aktiviert alle Interrupts global — ohne sei() funktioniert kein einziger Interrupt,main.c
+ISR(INT0_vect),"ISR(INT0_vect) { ... }",Wird automatisch aufgerufen wenn der Taster gedrückt wird (fallende Flanke an PD2),main.c
+ISR(TIMER0_COMPA_vect),"ISR(TIMER0_COMPA_vect) { ... }",Wird automatisch jede 1ms aufgerufen — zählt state_timer_ms herunter,main.c
+
+--- main.c — util/atomic.h ---
+ATOMIC_BLOCK,"ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { ... }","Deaktiviert Interrupts für den Block — verhindert fehlerhafte Werte wenn eine ISR mitten beim Lesen einer 2-Byte Variable unterbricht",main.c
+ATOMIC_RESTORESTATE,ATOMIC_BLOCK(ATOMIC_RESTORESTATE),Stellt nach dem Block den vorherigen Interrupt-Zustand wieder her,main.c
+
+--- main.c — util/delay.h ---
+_delay_ms,_delay_ms(1000),Wartet die angegebene Anzahl Millisekunden — blockiert den gesamten Prozessor,main.c
+
+--- motors.c — avr/io.h ---
+DDRD,FL_DDR |= (1 << FL_IN1_PIN),Setzt Motorpins PD4/PD5/PD6/PD7 als OUTPUT,motors.c
+DDRC,RL_DDR |= (1 << RL_IN1_PIN),Setzt Motorpins PC0/PC1/PC2/PC3 als OUTPUT,motors.c
+DDRB,PWM_DDR |= (1 << PWM_LEFT_PIN),Setzt PWM-Pins PB1 und PB2 als OUTPUT,motors.c
+PORTD,"FL_PORT |= (1 << FL_IN2_PIN)",Setzt Motorrichtungs-Pin auf HIGH oder LOW,motors.c
+PORTC,"RL_PORT |= (1 << RL_IN2_PIN)",Setzt Motorrichtungs-Pin auf HIGH oder LOW,motors.c
+TCCR1A,"TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM10)",Aktiviert PWM-Ausgabe an OC1A und OC1B und setzt Fast PWM 8-bit Modus (Teil 1),motors.c
+TCCR1B,"TCCR1B = (1 << WGM12) | (1 << CS11)",Fast PWM 8-bit Modus (Teil 2) und Prescaler 8,motors.c
+OCR1A,OCR1A = current_speed,PWM-Wert für linke Motoren — 0 = aus / 255 = volle Geschwindigkeit,motors.c
+OCR1B,OCR1B = current_speed,PWM-Wert für rechte Motoren — 0 = aus / 255 = volle Geschwindigkeit,motors.c
+COM1A1,TCCR1A = (1 << COM1A1),Aktiviert nicht-invertierenden PWM-Ausgang an OC1A (Pin PB1),motors.c
+COM1B1,TCCR1A = (1 << COM1B1),Aktiviert nicht-invertierenden PWM-Ausgang an OC1B (Pin PB2),motors.c
+WGM10,TCCR1A = (1 << WGM10),Waveform Generation Mode Bit — Fast PWM 8-bit Modus Teil 1,motors.c
+WGM12,TCCR1B = (1 << WGM12),Waveform Generation Mode Bit — Fast PWM 8-bit Modus Teil 2,motors.c
+CS11,TCCR1B = (1 << CS11),Clock Select Bit — Prescaler 8. Bei 16MHz: 2.000.000 Timer-Ticks pro Sekunde,motors.c
+
+--- sensors.c — avr/io.h ---
+DDRB,"TRIG_DDR |= (1 << TRIG_PIN)",Setzt TRIG-Pin PB3 als OUTPUT und ECHO-Pin PB4 als INPUT,sensors.c
+PORTB,"TRIG_PORT &= ~(1 << TRIG_PIN)",Setzt den TRIG-Pin auf LOW oder HIGH zum Auslösen des Ultraschallimpulses,sensors.c
+PINB,ECHO_PIN_REG & (1 << ECHO_PIN),Liest den Zustand des ECHO-Pins — HIGH solange das Echo zurückkommt,sensors.c
+
+--- sensors.c — util/delay.h ---
+_delay_us,_delay_us(10),Wartet die angegebene Anzahl Mikrosekunden — für den 10µs Trigger-Impuls des Sensors,sensors.c
+_delay_ms,_delay_ms(2),Wartet 2ms zwischen den Messungen — HC-SR04 Mindestabstand zwischen zwei Messungen,sensors.c
+
+--- wifi.c — avr/io.h ---
+UBRR0H,UBRR0H = 0,Oberes Byte der Baudrate-Einstellung — bei 9600 Baud = 0,wifi.c
+UBRR0L,UBRR0L = 103,"Unteres Byte der Baudrate — Formel: (F_CPU / (16 × Baud)) - 1. Bei 9600 Baud = 103",wifi.c
+UCSR0B,UCSR0B = (1 << RXEN0),Aktiviert den UART Empfänger über das RXEN0 Bit,wifi.c
+UCSR0C,"UCSR0C = (1 << UCSZ01) | (1 << UCSZ00)",Stellt 8 Datenbits ein — Standard für UART Kommunikation,wifi.c
+UCSR0A,UCSR0A & (1 << RXC0),Statusregister — wird geprüft ob ein neues Byte angekommen ist oder ein Fehler vorliegt,wifi.c
+UDR0,return UDR0,Empfangenes Byte wird hier ausgelesen — Lesen löscht automatisch das RXC0 Flag,wifi.c
+RXEN0,UCSR0B = (1 << RXEN0),Receiver Enable Bit — aktiviert den UART Empfänger,wifi.c
+UCSZ01,"(1 << UCSZ01) | (1 << UCSZ00)",Character Size Bit 1 — zusammen mit UCSZ00 = 8 Datenbits,wifi.c
+UCSZ00,"(1 << UCSZ01) | (1 << UCSZ00)",Character Size Bit 0 — zusammen mit UCSZ01 = 8 Datenbits,wifi.c
+RXC0,UCSR0A & (1 << RXC0),Receive Complete Flag — wird 1 wenn ein neues Byte im UDR0 liegt,wifi.c
+FE0,UCSR0A & (1 << FE0),Framing Error Flag — gesetzt wenn Stopbit fehlt,wifi.c
+DOR0,UCSR0A & (1 << DOR0),Data OverRun Flag — gesetzt wenn ein Byte verloren ging,wifi.c
+UPE0,UCSR0A & (1 << UPE0),USART Parity Error Flag — gesetzt bei Paritätsfehler,wifi.c

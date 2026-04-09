@@ -1,0 +1,32 @@
+Name,Used,Use Case,Variable,Notes,Current Use
+VCC,1,Power Supply,,,
+GND,1,Ground,,,
+GND2,1,Ground,,,
+PC6 (RESET),1,Reset Pin,,,
+AVCC,1,Analog Power Supply,,,
+AREF,1,Analog Reference,,,
+
+PD0 (RXD),1,Receive Data UART,,ESP32 Empfangen,UART RX
+PD1 (TXD),0,Transmit Data UART,,Not used,
+PD2 (INT0),1,External Interrupt,mode_button_pressed,Mode Button (Remote/Autonomous),External Interrupt
+PD3 (INT1/OC2B),0,External Interrupt or PWM or GPIO,,Not used,
+PD4 (T0/XCK),1,GPIO,FL_IN1_PIN,Motor Vorne Links Richtung 1,Motor Control
+PD5 (T1/OC0B),1,GPIO,FL_IN2_PIN,Motor Vorne Links Richtung 2,Motor Control
+PD6 (AIN0/OC0A),1,GPIO,FR_IN3_PIN,Motor Vorne Rechts Richtung 1,Motor Control
+PD7 (AIN1),1,GPIO,FR_IN4_PIN,Motor Vorne Rechts Richtung 2,Motor Control
+
+PB0 (ICP1/CLKO),0,GPIO,,Not used,
+PB1 (OC1A),1,PWM Output,OCR1A,Motor Links Geschwindigkeit (FL + RL),Motor PWM
+PB2 (SS/OC1B),1,PWM Output,OCR1B,Motor Rechts Geschwindigkeit (FR + RR),Motor PWM
+PB3 (MOSI/OC2A),1,GPIO,TRIG_PIN,Ultraschall Trigger,Sensor
+PB4 (MISO),1,GPIO,ECHO_PIN,Ultraschall Echo,Sensor
+PB5 (SCK),0,GPIO,,Not used,
+PB6 (XTAL1/TOSC1),1,Crystal Oscillator,,16MHz Oszillator,
+PB7 (XTAL2/TOSC2),1,Crystal Oscillator,,16MHz Oszillator,
+
+PC0 (ADC0),1,GPIO,RL_IN1_PIN,Motor Hinten Links Richtung 1,Motor Control
+PC1 (ADC1),1,GPIO,RL_IN2_PIN,Motor Hinten Links Richtung 2,Motor Control
+PC2 (ADC2),1,GPIO,RR_IN3_PIN,Motor Hinten Rechts Richtung 1,Motor Control
+PC3 (ADC3),1,GPIO,RR_IN4_PIN,Motor Hinten Rechts Richtung 2,Motor Control
+PC4 (ADC4/SDA),0,I2C,,Not used,
+PC5 (ADC5/SCL),0,I2C,,Not used,
