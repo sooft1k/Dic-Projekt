@@ -1,5 +1,6 @@
 #include "motors.h"
 #include <avr/io.h>
+#include <util/delay.h>
 
 /* Vorne links */
 #define FL_IN1_PIN      PD4
@@ -76,7 +77,7 @@ static void set_right_motors(MotorDirection dir) {
         case MOTOR_BACKWARD:
             FR_PORT |=  (1 << FR_IN1_PIN);
             FR_PORT &= ~(1 << FR_IN2_PIN);
-            RR_PORT &= ~(1 << RR_IN3_PIN);
+            RR_PORT |=  (1 << RR_IN3_PIN); 
             RR_PORT &= ~(1 << RR_IN4_PIN);
             break;
     }
