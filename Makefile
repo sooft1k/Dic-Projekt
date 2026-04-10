@@ -26,7 +26,7 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 
 flash: $(HEXFILE)
 	cp $(HEXFILE) /mnt/c/avrdude-v8.1-windows-x64/main.hex
-	cmd.exe /c "C:\\avrdude-v8.1-windows-x64\\avrdude.exe -c arduino -p atmega328p -P COM3 -b 115200 -U flash:w:C:\\avrdude-v8.1-windows-x64\\main.hex"
+	cmd.exe /c "C:\\avrdude-v8.1-windows-x64\\avrdude.exe -c arduino -p atmega328p -P COM4 -b 115200 -U flash:w:C:\\avrdude-v8.1-windows-x64\\main.hex"
 clean:
 	rm -f $(SRC_DIR)/*.o $(SRC_DIR)/*.elf $(SRC_DIR)/*.hex
 .PHONY: all flash clean
