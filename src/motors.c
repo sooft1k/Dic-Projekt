@@ -40,33 +40,21 @@ static void set_left_motors(MotorDirection dir) {
     switch (dir) {
         case MOTOR_STOP:
             FL_PORT &= ~(1 << FL_IN1_PIN);
-            _delay_ms(100);
             FL_PORT &= ~(1 << FL_IN2_PIN);
-            _delay_ms(100);
             RL_PORT &= ~(1 << RL_IN3_PIN);
-            _delay_ms(100);
             RL_PORT &= ~(1 << RL_IN4_PIN);
-            _delay_ms(100);
             break;
         case MOTOR_FORWARD:
             FL_PORT &= ~(1 << FL_IN1_PIN);
-            _delay_ms(100);
             FL_PORT |=  (1 << FL_IN2_PIN);
-            _delay_ms(100);
             RL_PORT &= ~(1 << RL_IN3_PIN);
-            _delay_ms(100);
             RL_PORT |=  (1 << RL_IN4_PIN);
-            _delay_ms(100);
             break;
         case MOTOR_BACKWARD:
             FL_PORT |=  (1 << FL_IN1_PIN);
-            _delay_ms(100);
             FL_PORT &= ~(1 << FL_IN2_PIN);
-            _delay_ms(100);
             RL_PORT |=  (1 << RL_IN3_PIN);
-            _delay_ms(100);
             RL_PORT &= ~(1 << RL_IN4_PIN);
-            _delay_ms(100);
             break;
     }
 }
@@ -75,33 +63,21 @@ static void set_right_motors(MotorDirection dir) {
     switch (dir) {
         case MOTOR_STOP:
             FR_PORT &= ~(1 << FR_IN1_PIN);
-            _delay_ms(100);
             FR_PORT &= ~(1 << FR_IN2_PIN);
-            _delay_ms(100);
             RR_PORT &= ~(1 << RR_IN3_PIN);
-            _delay_ms(100);
             RR_PORT &= ~(1 << RR_IN4_PIN);
-            _delay_ms(100);
             break;
         case MOTOR_FORWARD:
             FR_PORT &= ~(1 << FR_IN1_PIN);
-            _delay_ms(100);
             FR_PORT |=  (1 << FR_IN2_PIN);
-            _delay_ms(100);
             RR_PORT &= ~(1 << RR_IN3_PIN);
-            _delay_ms(100);
             RR_PORT |=  (1 << RR_IN4_PIN);
-            _delay_ms(100);
             break;
         case MOTOR_BACKWARD:
             FR_PORT |=  (1 << FR_IN1_PIN);
-            _delay_ms(100);
             FR_PORT &= ~(1 << FR_IN2_PIN);
-            _delay_ms(100);
-            RR_PORT |=  (1 << RR_IN3_PIN);
-            _delay_ms(100);
+            RR_PORT &= ~(1 << RR_IN3_PIN);
             RR_PORT &= ~(1 << RR_IN4_PIN);
-            _delay_ms(100);
             break;
     }
 }
@@ -119,14 +95,10 @@ static void motor_pwm_init(void) {
 
 void motor_init(void) {
     FL_DDR |= (1 << FL_IN1_PIN) | (1 << FL_IN2_PIN);
-    _delay_ms(100);
     RL_DDR |= (1 << RL_IN3_PIN) | (1 << RL_IN4_PIN);
-    _delay_ms(100);
     FR_DDR |= (1 << FR_IN1_PIN) | (1 << FR_IN2_PIN);
-    _delay_ms(100);
     RR_DDR |= (1 << RR_IN3_PIN) | (1 << RR_IN4_PIN);
-    _delay_ms(100);
-
+    _delay_ms(100); 
     motor_pwm_init();
     motor_stop();
     motor_set_speed(MOTOR_SPEED_DEFAULT);
