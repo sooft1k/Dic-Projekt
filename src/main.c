@@ -35,11 +35,11 @@ ISR(TIMER0_COMPA_vect) {
 void toggle_mode(void) {
     if (current_mode == MODE_AUTONOMOUS) {
         current_mode = MODE_MANUEL;
-        motor_set_speed(255);
+        motor_set_speed(200);
     } else {
         current_mode = MODE_AUTONOMOUS;
         auto_state   = AUTO_FORWARD;
-        motor_set_speed(180);
+        motor_set_speed(200);
         motor_stop();
     }
 }
@@ -112,13 +112,8 @@ void autonomous_mode(void) {
         motor_stop();
         auto_state = AUTO_REVERSE;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 500; }
-    } else if (d > 0 && d < 40) {
-        /* Hindernis zwischen 20-40cm — langsamer fahren */
-        motor_set_speed(100);
-        motor_forward();
     } else {
-        /* Weg frei — volle Geschwindigkeit */
-        motor_set_speed(180);
+        motor_set_speed(200);
         motor_forward();
     }
     break;
@@ -151,7 +146,7 @@ int main(void) {
 
     sei();
     _delay_ms(1000);
-    motor_set_speed(180);
+    motor_set_speed(200);
 
     while (1) {
         check_mode_switch();
