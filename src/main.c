@@ -113,7 +113,6 @@ void autonomous_mode(void) {
         auto_state = AUTO_REVERSE;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 500; }
     } else {
-        motor_set_speed(200);
         motor_forward();
     }
     break;
