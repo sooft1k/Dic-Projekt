@@ -35,11 +35,11 @@ ISR(TIMER0_COMPA_vect) {
 void toggle_mode(void) {
     if (current_mode == MODE_AUTONOMOUS) {
         current_mode = MODE_MANUEL;
-        motor_set_speed(200);
+        motor_set_speed(180);
     } else {
         current_mode = MODE_AUTONOMOUS;
         auto_state   = AUTO_FORWARD;
-        motor_set_speed(200);
+        motor_set_speed(180);
         motor_stop();
     }
 }
@@ -145,7 +145,7 @@ int main(void) {
 
     sei();
     _delay_ms(1000);
-    motor_set_speed(200);
+    motor_set_speed(180);
 
     while (1) {
         check_mode_switch();
