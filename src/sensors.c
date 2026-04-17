@@ -2,14 +2,16 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define TRIG_PIN        PB3
-#define TRIG_DDR        DDRB
-#define TRIG_PORT       PORTB
+#define TRIG_PIN        PC5   // ← geändert von PB3
+#define TRIG_DDR        DDRC  // ← geändert von DDRB
+#define TRIG_PORT       PORTC // ← geändert von PORTB
 
 #define ECHO_PIN        PB4
 #define ECHO_DDR        DDRB
 #define ECHO_PORT       PORTB
 #define ECHO_PIN_REG    PINB
+
+// ... Rest bleibt identisch
 
 #define TIMEOUT_US      5800
 #define MAX_DISTANCE_CM 100

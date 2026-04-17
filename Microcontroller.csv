@@ -9,16 +9,16 @@ AREF,1,Analog Reference,,,
 PD0 (RXD),1,Receive Data UART,,ESP32 Empfangen,UART RX
 PD1 (TXD),0,Transmit Data UART,,Not used,
 PD2 (INT0),0,External Interrupt,,Not used,
-PD3 (INT1/OC2B),0,External Interrupt or PWM or GPIO,,Not used,
+PD3 (INT1/OC2B),1,PWM Output,PWM_RR_PIN,Motor Hinten Rechts Geschwindigkeit – ENB L298N #2,Motor PWM
 PD4 (T0/XCK),1,GPIO,FL_IN1_PIN,Motor Vorne Links Richtung 1,Motor Control
 PD5 (T1/OC0B),1,GPIO,FL_IN2_PIN,Motor Vorne Links Richtung 2,Motor Control
 PD6 (AIN0/OC0A),1,GPIO,RL_IN3_PIN,Motor Hinten Links Richtung 1,Motor Control
 PD7 (AIN1),1,GPIO,RL_IN4_PIN,Motor Hinten Links Richtung 2,Motor Control
 
 PB0 (ICP1/CLKO),0,GPIO,,Not used,
-PB1 (OC1A),1,PWM Output,OCR1A,Motor Links Geschwindigkeit (FL + RL),Motor PWM
-PB2 (SS/OC1B),1,PWM Output,OCR1B,Motor Rechts Geschwindigkeit (FR + RR),Motor PWM
-PB3 (MOSI/OC2A),1,GPIO,TRIG_PIN,Ultraschall Trigger,Sensor
+PB1 (OC1A),1,PWM Output,PWM_FL_PIN,Motor Vorne Links Geschwindigkeit – ENA L298N #1,Motor PWM
+PB2 (SS/OC1B),1,PWM Output,PWM_RL_PIN,Motor Hinten Links Geschwindigkeit – ENB L298N #1,Motor PWM
+PB3 (MOSI/OC2A),1,PWM Output,PWM_FR_PIN,Motor Vorne Rechts Geschwindigkeit – ENA L298N #2,Motor PWM
 PB4 (MISO),1,GPIO,ECHO_PIN,Ultraschall Echo,Sensor
 PB5 (SCK),0,GPIO,,Not used,
 PB6 (XTAL1/TOSC1),1,Crystal Oscillator,,16MHz Oszillator,
@@ -29,4 +29,4 @@ PC1 (ADC1),1,GPIO,FR_IN2_PIN,Motor Vorne Rechts Richtung 2,Motor Control
 PC2 (ADC2),1,GPIO,RR_IN3_PIN,Motor Hinten Rechts Richtung 1,Motor Control
 PC3 (ADC3),1,GPIO,RR_IN4_PIN,Motor Hinten Rechts Richtung 2,Motor Control
 PC4 (ADC4/SDA),0,I2C,,Not used,
-PC5 (ADC5/SCL),0,I2C,,Not used,
+PC5 (ADC5/SCL),1,GPIO,TRIG_PIN,Ultraschall Trigger,Sensor
