@@ -31,13 +31,13 @@
 #define PWM_RIGHT_PIN   PB2   
 #define PWM_DDR         DDRB
 
-#define MOTOR_SPEED_DEFAULT 255
+#define MOTOR_SPEED_DEFAULT 255 // Standardgeschwindigkeit (0-255)
 
-typedef enum { MOTOR_STOP, MOTOR_BACKWARD, MOTOR_FORWARD } MotorDirection;
+typedef enum { MOTOR_STOP, MOTOR_BACKWARD, MOTOR_FORWARD } MotorDirection; // Motorrichtungsdefinition
 
-static uint8_t current_speed = MOTOR_SPEED_DEFAULT;
+static uint8_t current_speed = MOTOR_SPEED_DEFAULT; // Aktuelle Geschwindigkeit der Motoren (0-255)
 
-static void set_left_motors(MotorDirection dir) {
+static void set_left_motors(MotorDirection dir) { // Steuert die Richtung der linken Motoren
     switch (dir) {
         case MOTOR_STOP:
             FL_PORT &= ~(1 << FL_IN1_PIN);
@@ -60,7 +60,7 @@ static void set_left_motors(MotorDirection dir) {
     }
 }
 
-static void set_right_motors(MotorDirection dir) {
+static void set_right_motors(MotorDirection dir) { // Steuert die Richtung der rechten Motoren
     switch (dir) {
         case MOTOR_STOP:
             FR_PORT &= ~(1 << FR_IN1_PIN);
@@ -75,15 +75,15 @@ static void set_right_motors(MotorDirection dir) {
             RR_PORT |=  (1 << RR_IN4_PIN);
             break;
         case MOTOR_BACKWARD:
-            FR_PORT |=  (1 << FR_IN1_PIN);
-            FR_PORT &= ~(1 << FR_IN2_PIN);
+            FR_PORT |=  (1 << FR_IN1_PIN); 
+            FR_PORT &= ~(1 << FR_IN2_PIN); 
             RR_PORT |=  (1 << RR_IN3_PIN); 
-            RR_PORT &= ~(1 << RR_IN4_PIN);
+            RR_PORT &= ~(1 << RR_IN4_PIN); 
             break;
     }
 }
 
-static void motor_pwm_init(void) {
+static void motor_pwm_init(void) { 
     TCCR1A = (1 << COM1A1) |
              (1 << COM1B1) |
              (1 << WGM10);
