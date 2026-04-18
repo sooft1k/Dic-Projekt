@@ -1,0 +1,26 @@
+BasedOnStyle: Google
+
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+
+ColumnLimit: 100
+
+BreakBeforeBraces: Attach
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+
+SpaceBeforeParens: ControlStatements
+
+PointerAlignment: Left
+
+SortIncludes: false
+
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+
+IndentCaseLabels: true
+
+MaxEmptyLinesToKeep: 1
