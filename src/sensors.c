@@ -13,7 +13,7 @@
 
 // ... Rest bleibt identisch
 
-#define TIMEOUT_US      5800
+#define TIMEOUT_US      3000
 #define MAX_DISTANCE_CM 100
 #define MIN_DISTANCE_CM 2
 #define NUM_MEASUREMENTS 1
@@ -38,8 +38,10 @@ void sensor_init(void) {
 uint16_t ultrasonic_measure_us(void) {
     uint16_t duration_us = 0;
 
+    /* Sensor komplett zurücksetzen */
     TRIG_PORT &= ~(1 << TRIG_PIN);
-    _delay_us(2);
+    _delay_ms(5);  // ← neu: 5ms warten vor jeder Messung
+    
     TRIG_PORT |=  (1 << TRIG_PIN);
     _delay_us(10);
     TRIG_PORT &= ~(1 << TRIG_PIN);
@@ -72,7 +74,7 @@ int read_distance(void) {
             sum += dist;
             valid_count++;
         }
-        _delay_ms(2);
+        _delay_ms(10);
     }
     if (valid_count == 0) return -1;
     return sum / valid_count;

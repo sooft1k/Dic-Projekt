@@ -110,17 +110,17 @@
         if (t > 0) return;                     // Timer läuft noch — warten
 
         switch (auto_state) {
-            case AUTO_FORWARD: {               // Vorwärts fahren und Sensor prüfen
-                int d = read_distance();
-                if (d > 0 && d < OBSTACLE_DISTANCE_CM) { // Hindernis erkannt
-                    motor_stop();
-                    auto_state = AUTO_REVERSE;
-                    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 500; } // 500ms warten
-                } else {
-                    motor_forward();           // Weg frei — vorwärts
-                }
-                break;
-            }
+            case AUTO_FORWARD: {
+    int d = read_distance();
+    if (d > 0 && d < OBSTACLE_DISTANCE_CM) {
+        motor_stop();
+        auto_state = AUTO_REVERSE;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 800; } // von 500 auf 800
+    } else {
+        motor_forward();
+    }
+    break;
+}
             case AUTO_REVERSE:                 // Rückwärts fahren
                 motor_backward();
                 auto_state = AUTO_TURN;
@@ -133,11 +133,11 @@
                 ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 800; } // 800ms drehen
                 break;
 
-            case AUTO_PAUSE:                   // Kurze Pause
-                motor_stop();
-                auto_state = AUTO_FORWARD;
-                ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 200; } // 200ms warten
-                break;
+            case AUTO_PAUSE:
+    motor_stop();
+    auto_state = AUTO_FORWARD;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) { state_timer_ms = 500; } // von 200 auf 500
+    break;
         }
     }
 
