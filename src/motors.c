@@ -174,24 +174,22 @@ void motor_stop(void)
     OCR2B = 0;
 }
 
-void motor_curve_left(void)
-{
+void motor_curve_left(void) {
     set_left_motors(MOTOR_FORWARD);
     set_right_motors(MOTOR_FORWARD);
-    OCR1A = current_speed / 2;
-    OCR1B = current_speed / 2;
+    OCR1A = current_speed / 4;
+    OCR1B = current_speed / 4;
     OCR2A = current_speed;
     OCR2B = current_speed;
 }
 
-void motor_curve_right(void)
-{
+void motor_curve_right(void) {
     set_left_motors(MOTOR_FORWARD);
     set_right_motors(MOTOR_FORWARD);
     OCR1A = current_speed;
     OCR1B = current_speed;
-    OCR2A = current_speed / 2;
-    OCR2B = current_speed / 2;
+    OCR2A = current_speed / 4;
+    OCR2B = current_speed / 4;
 }
 
 void motor_backward_curve_right(void)

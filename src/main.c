@@ -35,7 +35,7 @@
     void toggle_mode(void) {
         if (current_mode == MODE_AUTONOMOUS) { // Wechsel zu manuell
             current_mode = MODE_MANUEL;
-            motor_set_speed(200);              // Geschwindigkeit für manuellen Modus
+            motor_set_speed(255);              // Geschwindigkeit für manuellen Modus
         } else {                               // Wechsel zu autonom
             current_mode = MODE_AUTONOMOUS;
             auto_state   = AUTO_FORWARD;       // State-Machine zurücksetzen
