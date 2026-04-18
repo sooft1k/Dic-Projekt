@@ -129,52 +129,65 @@ void process_remote(void) {
 }
 
 void autonomous_mode(void) {
-  check_mode_switch();  // Auf Moduswechsel prüfen
+  check_mode_switch();
 
   uint16_t t;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     t = state_timer_ms;
-  }  // Timer atomar lesen
+  }
   if (t > 0)
-    return;  // Timer läuft noch — warten
+    return;
 
   switch (auto_state) {
     case AUTO_FORWARD: {
       int d = read_distance();
-      if (d > 0 && d < OBSTACLE_DISTANCE_CM) {
+      if (d > 0 && d < OBSTACLE_DISTANCE_CM) {  // Hindernis erkannt
         motor_stop();
         auto_state = AUTO_REVERSE;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
           state_timer_ms = 800;
-        }  // von 500 auf 800
+        }
       } else {
-        motor_forward();
+        motor_forward();  // Weg frei — vorwärts
       }
       break;
     }
-    case AUTO_REVERSE:  // Rückwärts fahren
-      motor_backward();
+
+    case AUTO_REVERSE:
+      motor_backward();  // Kurz zurückfahren
       auto_state = AUTO_TURN;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        state_timer_ms = 2000;
-      }  // 2 Sek rückwärts
+        state_timer_ms = 500;
+      }  // nur 500ms zurück
       break;
 
-    case AUTO_TURN:  // Rechts drehen
-      motor_turn_right();
+    case AUTO_TURN:
+      motor_curve_right();  // Kurve versuchen statt Drehung
       auto_state = AUTO_PAUSE;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        state_timer_ms = 800;
-      }  // 800ms drehen
+        state_timer_ms = 1500;
+      }  // 1.5 Sek Kurve
       break;
 
-    case AUTO_PAUSE:
+    case AUTO_PAUSE: {
       motor_stop();
-      auto_state = AUTO_FORWARD;
-      ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        state_timer_ms = 500;
-      }  // von 200 auf 500
+      // Nochmal messen — immer noch Hindernis?
+      int d = read_distance();
+      if (d > 0 && d < OBSTACLE_DISTANCE_CM) {
+        // Wand — richtige Drehung machen
+        auto_state = AUTO_REVERSE;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+          state_timer_ms = 300;
+        }
+      } else {
+        // Weg frei — kleines Hindernis, weiterfahren
+        auto_state = AUTO_FORWARD;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+          state_timer_ms = 500;
+        }
+      }
       break;
+    }
   }
 }
 
