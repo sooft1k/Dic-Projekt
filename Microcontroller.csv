@@ -6,7 +6,7 @@ PC6 (RESET),1,Reset Pin,,,
 AVCC,1,Analog Power Supply,,,
 AREF,1,Analog Reference,,,
 
-PD0 (RXD),1,Receive Data UART,,ESP32 Empfangen,UART RX
+PD0 (RXD),1,Receive Data UART,,ESP32 TX → ATmega RX (PS4/PS5 Controller Daten via ESP32 Bluetooth),UART RX
 PD1 (TXD),0,Transmit Data UART,,Not used,
 PD2 (INT0),0,External Interrupt,,Not used,
 PD3 (INT1/OC2B),1,PWM Output,PWM_RR_PIN,Motor Hinten Rechts Geschwindigkeit – ENB L298N #2,Motor PWM
