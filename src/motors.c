@@ -101,29 +101,6 @@ typedef enum { MOTOR_STOP, MOTOR_BACKWARD, MOTOR_FORWARD } MotorDirection;
  *   PWM-Werte, da OCR-Register ebenfalls 8 Bit groß sind. */
 static uint8_t current_speed = MOTOR_SPEED_DEFAULT;
 
-/* ── set_left_motors: Drehrichtung der linken Motoren setzen ─────────────
- *
- *  "static" vor der Funktion: Nur intern in motors.c verwendbar.
- *  Von außen (main.c) ruft man motor_forward(), motor_stop() usw. auf –
- *  diese Hilfsfunktion bleibt verborgen.
- *
- *  Die Bit-Operatoren im Detail:
- *
- *    FL_PORT |= (1 << FL_IN2_PIN)
- *      "|=" = bitweises ODER mit Zuweisung.
- *      (1 << FL_IN2_PIN) erzeugt eine Zahl, bei der nur das FL_IN2-Bit
- *      gesetzt ist. Mit "|=" wird genau dieses Bit auf 1 gesetzt,
- *      ohne die anderen Bits im PORT-Register zu verändern.
- *      → Pin geht auf HIGH.
- *
- *    FL_PORT &= ~(1 << FL_IN1_PIN)
- *      "&=" = bitweises UND mit Zuweisung.
- *      "~" = bitweise Invertierung (0 wird 1, 1 wird 0).
- *      ~(1 << FL_IN1_PIN) ergibt eine Zahl, bei der alle Bits 1 sind
- *      AUSSER dem FL_IN1-Bit. Mit "&=" wird nur dieses eine Bit auf 0
- *      gesetzt, alle anderen bleiben unverändert.
- *      → Pin geht auf LOW.
- * ──────────────────────────────────────────────────────────────────────── */
 static void set_left_motors(MotorDirection dir) {
   switch (dir) {
     case MOTOR_STOP:
@@ -147,10 +124,6 @@ static void set_left_motors(MotorDirection dir) {
   }
 }
 
-/* ── set_right_motors: Identisch für die rechte Seite ────────────────────
- *
- *  FR (Port C, Pin 0+1) und RR (Port C, Pin 2+3) – selbe Logik wie links.
- * ──────────────────────────────────────────────────────────────────────── */
 static void set_right_motors(MotorDirection dir) {
   switch (dir) {
     case MOTOR_STOP:
