@@ -45,7 +45,7 @@ void toggle_mode(void) {
   } else {                 // Wechsel zu autonom
     current_mode = MODE_AUTONOMOUS;
     auto_state   = AUTO_FORWARD;  // State-Machine zurücksetzen
-    motor_set_speed(200);         // Geschwindigkeit für autonomen Modus
+    motor_set_speed(220);         // Geschwindigkeit für autonomen Modus
     motor_stop();                 // Motoren stoppen beim Wechsel
   }
 }
@@ -129,6 +129,7 @@ void process_remote(void) {
 }
 
 void autonomous_mode(void) {
+  static uint8_t turn_direction = 0;  // 0 = rechts, 1 = links
   check_mode_switch();
 
   uint16_t t;
@@ -162,13 +163,18 @@ void autonomous_mode(void) {
       break;
 
     case AUTO_TURN:
-      motor_curve_right();  // Kurve versuchen statt Drehung
+      if (turn_direction == 0) {
+        motor_curve_right();
+        turn_direction = 1;  // nächstes Mal links
+      } else {
+        motor_curve_left();
+        turn_direction = 0;  // nächstes Mal rechts
+      }
       auto_state = AUTO_PAUSE;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         state_timer_ms = 1500;
-      }  // 1.5 Sek Kurve
+      }
       break;
-
     case AUTO_PAUSE: {
       motor_stop();
       // Nochmal messen — immer noch Hindernis?
