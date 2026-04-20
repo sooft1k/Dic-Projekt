@@ -1,73 +1,68 @@
 #define F_CPU 16000000UL
 
 #include <avr/io.h>
-#include <avr/interrupt.h>  // ISR, sei()
-#include <util/delay.h>     //
-#include <util/atomic.h>    // ATOMIC_BLOCK — Interrupt-sicherer Zugriff
-#include <stdlib.h>         //
+#include <avr/interrupt.h>
+#include <util/delay.h>
+#include <util/atomic.h>
+#include <stdlib.h>
 #include "motors.h"
 #include "sensors.h"
 #include "bt.h"
 
-#define OBSTACLE_DISTANCE_CM 20  // Hindernis-Schwellwert in cm
-#define REMOTE_START_BYTE 0xFF   // Startbyte eines Steuerpakets
-#define REMOTE_TIMEOUT_MS 50     // Max. Wartezeit auf Byte in ms
-#define REMOTE_THRESHOLD 100     // Mindestwert für Bewegungsbefehl (-200 bis +200)
+#define OBSTACLE_DISTANCE_CM 20
+#define REMOTE_START_BYTE 0xFF
+#define REMOTE_TIMEOUT_MS 50
+#define REMOTE_THRESHOLD 100
 
-typedef enum { MODE_AUTONOMOUS, MODE_MANUEL } RobotMode;  // Zwei Betriebsmodi
-typedef enum {
-  AUTO_FORWARD,
-  AUTO_REVERSE,
-  AUTO_TURN,
-  AUTO_PAUSE
-} AutoState;  // 4 Zustände autonomer Modus
+typedef enum { MODE_AUTONOMOUS, MODE_MANUEL } RobotMode;
+typedef enum { AUTO_FORWARD, AUTO_REVERSE, AUTO_TURN, AUTO_PAUSE } AutoState;
 
-volatile RobotMode current_mode = MODE_AUTONOMOUS;  // Aktueller Modus — volatile wegen ISR-Zugriff
-static AutoState   auto_state   = AUTO_FORWARD;     // Aktueller Zustand State-Machine
-volatile uint16_t  state_timer_ms = 0;  // Timer-Zähler — wird von ISR jede ms dekrementiert
+volatile RobotMode current_mode   = MODE_AUTONOMOUS;
+static AutoState   auto_state     = AUTO_FORWARD;
+volatile uint16_t  state_timer_ms = 0;
 
 void timer0_init(void) {
-  TCCR0A = (1 << WGM01);               // CTC-Modus — zählt bis OCR0A dann zurück auf 0
-  TCCR0B = (1 << CS01) | (1 << CS00);  // Prescaler 64 → 250.000 Ticks/Sek bei 16MHz
-  OCR0A  = 249;                        // 250.000 / 250 = 1.000 Interrupts/Sek = 1ms Takt
-  TIMSK0 = (1 << OCIE0A);              // Compare-Interrupt aktivieren
+  TCCR0A = (1 << WGM01);
+  TCCR0B = (1 << CS01) | (1 << CS00);
+  OCR0A  = 249;
+  TIMSK0 = (1 << OCIE0A);
 }
 
-ISR(TIMER0_COMPA_vect) {  // Wird automatisch jede 1ms aufgerufen
+ISR(TIMER0_COMPA_vect) {
   if (state_timer_ms > 0)
-    state_timer_ms--;  // Timer herunterzählen
+    state_timer_ms--;
 }
 
 void toggle_mode(void) {
-  if (current_mode == MODE_AUTONOMOUS) {  // Wechsel zu manuell
+  if (current_mode == MODE_AUTONOMOUS) {
     current_mode = MODE_MANUEL;
-    motor_set_speed(220);  // Geschwindigkeit für manuellen Modus
-  } else {                 // Wechsel zu autonom
+    motor_set_speed(220);
+  } else {
     current_mode = MODE_AUTONOMOUS;
-    auto_state   = AUTO_FORWARD;  // State-Machine zurücksetzen
-    motor_set_speed(220);         // Geschwindigkeit für autonomen Modus
-    motor_stop();                 // Motoren stoppen beim Wechsel
+    auto_state   = AUTO_FORWARD;
+    motor_set_speed(220);
+    motor_stop();
   }
 }
 
 void check_mode_switch(void) {
   if (!bt_data_available())
-    return;                  // Kein Byte verfügbar — nichts tun
-  uint8_t b = bt_receive();  // Byte lesen
+    return;
+  uint8_t b = bt_receive();
   if (b == 0xFE)
-    toggle_mode();  // 0xFE = Moduswechsel-Befehl vom Controller
+    toggle_mode();
 }
 
 static uint8_t remote_receive_timeout(uint8_t* timeout) {
   uint16_t ms = 0;
-  while (!bt_data_available()) {  // Warten bis Byte verfügbar
+  while (!bt_data_available()) {
     _delay_ms(1);
-    if (++ms >= REMOTE_TIMEOUT_MS) {  // Nach 100ms — Timeout
+    if (++ms >= REMOTE_TIMEOUT_MS) {
       *timeout = 1;
       return 0;
     }
   }
-  return bt_receive();  // Byte zurückgeben
+  return bt_receive();
 }
 
 void process_remote(void) {
@@ -78,23 +73,23 @@ void process_remote(void) {
   if (timeout) {
     motor_stop();
     return;
-  }  // Timeout — Motor stoppen
+  }
 
-  if (first == 0xFE) {  // Moduswechsel mitten im manuellen Modus
+  if (first == 0xFE) {
     toggle_mode();
     return;
   }
 
-  if (first != REMOTE_START_BYTE) {  // Kein Startbyte — Synchronisation verloren
+  if (first != REMOTE_START_BYTE) {
     if (++sync > 3) {
       motor_stop();
       return;
-    }  // Nach 3 Versuchen aufgeben
+    }
     return;
   }
 
   uint8_t data[4];
-  for (uint8_t i = 0; i < 4; i++) {  // 4 Datenbytes lesen (x_high, x_low, y_high, y_low)
+  for (uint8_t i = 0; i < 4; i++) {
     data[i] = remote_receive_timeout(&timeout);
     if (timeout) {
       motor_stop();
@@ -102,18 +97,17 @@ void process_remote(void) {
     }
   }
 
-  // 2 Bytes zu 16-Bit Wert zusammensetzen
-  int16_t x = (int16_t)(((uint16_t)data[0] << 8) | data[1]);  // Links/Rechts (-200 bis +200)
-  int16_t y = (int16_t)(((uint16_t)data[2] << 8) | data[3]);  // Vorwärts/Rückwärts (-200 bis +200)
+  int16_t x = (int16_t)(((uint16_t)data[0] << 8) | data[1]);
+  int16_t y = (int16_t)(((uint16_t)data[2] << 8) | data[3]);
 
-  if (y > REMOTE_THRESHOLD) {  // L2 gedrückt — vorwärts
+  if (y > REMOTE_THRESHOLD) {
     if (x > REMOTE_THRESHOLD)
-      motor_curve_right();  // + rechter Stick rechts
+      motor_curve_right();
     else if (x < -REMOTE_THRESHOLD)
-      motor_curve_left();  // + rechter Stick links
+      motor_curve_left();
     else
-      motor_forward();                 // geradeaus
-  } else if (y < -REMOTE_THRESHOLD) {  // R2 gedrückt — rückwärts
+      motor_forward();
+  } else if (y < -REMOTE_THRESHOLD) {
     if (x > REMOTE_THRESHOLD)
       motor_backward_curve_right();
     else if (x < -REMOTE_THRESHOLD)
@@ -121,15 +115,15 @@ void process_remote(void) {
     else
       motor_backward();
   } else if (x > REMOTE_THRESHOLD)
-    motor_turn_right();  // Rechter Stick rechts — auf der Stelle drehen
+    motor_turn_right();
   else if (x < -REMOTE_THRESHOLD)
-    motor_turn_left();  // Rechter Stick links — auf der Stelle drehen
+    motor_turn_left();
   else
-    motor_stop();  // Nichts gedrückt — stoppen
+    motor_stop();
 }
 
 void autonomous_mode(void) {
-  static uint8_t turn_direction = 0;  // 0 = rechts, 1 = links
+  static uint8_t turn_direction = 0;
   check_mode_switch();
 
   uint16_t t;
@@ -142,51 +136,48 @@ void autonomous_mode(void) {
   switch (auto_state) {
     case AUTO_FORWARD: {
       int d = read_distance();
-      if (d > 0 && d < OBSTACLE_DISTANCE_CM) {  // Hindernis erkannt
+      if (d > 0 && d < OBSTACLE_DISTANCE_CM) {
         motor_stop();
         auto_state = AUTO_REVERSE;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
           state_timer_ms = 800;
         }
       } else {
-        motor_forward();  // Weg frei — vorwärts
+        motor_forward();
       }
       break;
     }
-
     case AUTO_REVERSE:
-      motor_backward();  // Kurz zurückfahren
+      motor_backward();
       auto_state = AUTO_TURN;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         state_timer_ms = 500;
-      }  // nur 500ms zurück
+      }
       break;
 
     case AUTO_TURN:
       if (turn_direction == 0) {
         motor_curve_right();
-        turn_direction = 1;  // nächstes Mal links
+        turn_direction = 1;
       } else {
         motor_curve_left();
-        turn_direction = 0;  // nächstes Mal rechts
+        turn_direction = 0;
       }
       auto_state = AUTO_PAUSE;
       ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         state_timer_ms = 1500;
       }
       break;
+
     case AUTO_PAUSE: {
       motor_stop();
-      // Nochmal messen — immer noch Hindernis?
       int d = read_distance();
       if (d > 0 && d < OBSTACLE_DISTANCE_CM) {
-        // Wand — richtige Drehung machen
         auto_state = AUTO_REVERSE;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
           state_timer_ms = 300;
         }
       } else {
-        // Weg frei — kleines Hindernis, weiterfahren
         auto_state = AUTO_FORWARD;
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
           state_timer_ms = 500;
@@ -198,21 +189,20 @@ void autonomous_mode(void) {
 }
 
 int main(void) {
-  motor_init();   // Motor-Pins und PWM initialisieren
-  bt_init();      // UART für Bluetooth initialisieren
-  sensor_init();  // Ultraschall-Sensor initialisieren
-  timer0_init();  // Timer0 als 1ms Takt starten
+  motor_init();
+  bt_init();
+  sensor_init();
+  timer0_init();
 
-  sei();                 // Alle Interrupts global aktivieren
-  _delay_ms(1000);       // 1 Sek warten — ESP32 Zeit zum Verbinden geben
-  motor_set_speed(200);  // Startgeschwindigkeit setzen
+  sei();
+  _delay_ms(1000);
+  motor_set_speed(200);
 
-  while (1) {             // Endlosschleife
-    check_mode_switch();  // Auf Moduswechsel prüfen
-
+  while (1) {
+    check_mode_switch();
     if (current_mode == MODE_AUTONOMOUS)
-      autonomous_mode();  // Sensor steuert
+      autonomous_mode();
     else
-      process_remote();  // Controller steuert
+      process_remote();
   }
 }
