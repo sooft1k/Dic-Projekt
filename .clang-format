@@ -8,9 +8,11 @@ ColumnLimit: 100
 
 BreakBeforeBraces: Attach
 
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
 
 SpaceBeforeParens: ControlStatements
 
@@ -24,3 +26,12 @@ AlignConsecutiveDeclarations: true
 IndentCaseLabels: true
 
 MaxEmptyLinesToKeep: 1
+
+BinPackArguments: true
+BinPackParameters: true
+
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakAssignment: 10
+PenaltyReturnTypeOnItsOwnLine: 1000
+
+KeepEmptyLinesAtTheStartOfBlocks: false

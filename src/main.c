@@ -16,7 +16,7 @@
  *   bt.h/c      – UART-Empfang vom ESP32
  */
 
-#define F_CPU                                                                 \
+#define F_CPU                                                                   \
   16000000UL               /* CPU-Takt 16 MHz – muss vor den Includes stehen, \
                               weil _delay_ms() diesen Wert für seine Berechnung braucht */
 #include <avr/io.h>        /* Register-Namen: TCCR, OCR, DDR, PORT, ... */
@@ -88,8 +88,7 @@ void timer0_init(void) {
  * Zählt state_timer_ms um 1 herunter → präziser Timer ohne Blockierung der main()-Schleife.
  */
 ISR(TIMER0_COMPA_vect) {
-  if (state_timer_ms > 0)
-    state_timer_ms--;
+  if (state_timer_ms > 0) state_timer_ms--;
 }
 
 /*
@@ -118,11 +117,9 @@ void toggle_mode(void) {
  * Wird regelmäßig aufgerufen damit ein Moduswechsel jederzeit möglich ist.
  */
 void check_mode_switch(void) {
-  if (!bt_data_available())
-    return;
+  if (!bt_data_available()) return;
   uint8_t b = bt_receive();
-  if (b == 0xFE)
-    toggle_mode();
+  if (b == 0xFE) toggle_mode();
 }
 
 /*
@@ -253,8 +250,7 @@ void autonomous_mode(void) {
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     t = state_timer_ms;
   }
-  if (t > 0)
-    return; /* Zustand noch aktiv → nichts tun */
+  if (t > 0) return; /* Zustand noch aktiv → nichts tun */
 
   switch (auto_state) {
     case AUTO_FORWARD: {

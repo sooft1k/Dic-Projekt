@@ -49,8 +49,7 @@
  */
 static uint8_t wait_for_echo_high(uint16_t timeout_us) {
   while (!(ECHO_PIN_REG & (1 << ECHO_PIN))) {
-    if (timeout_us == 0)
-      return 0;
+    if (timeout_us == 0) return 0;
     _delay_us(1);
     timeout_us--;
   }
@@ -97,14 +96,12 @@ uint16_t ultrasonic_measure_us(void) {
   _delay_us(10);
   TRIG_PORT &= ~(1 << TRIG_PIN);
 
-  if (!wait_for_echo_high(TIMEOUT_US))
-    return 0;
+  if (!wait_for_echo_high(TIMEOUT_US)) return 0;
 
   while (ECHO_PIN_REG & (1 << ECHO_PIN)) {
     _delay_us(1);
     duration_us++;
-    if (duration_us >= TIMEOUT_US)
-      return 0;
+    if (duration_us >= TIMEOUT_US) return 0;
   }
   return duration_us;
 }
@@ -119,12 +116,10 @@ uint16_t ultrasonic_measure_us(void) {
  */
 int ultrasonic_distance_cm(void) {
   uint16_t duration_us = ultrasonic_measure_us();
-  if (duration_us == 0)
-    return -1;
+  if (duration_us == 0) return -1;
 
   int distance_cm = duration_us / 58;
-  if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM)
-    return -1;
+  if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM) return -1;
   return distance_cm;
 }
 
