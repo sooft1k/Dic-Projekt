@@ -1,6 +1,7 @@
-// sensors.c – Ultraschallsensor HC-SR04
-// Misst die Entfernung zu einem Hindernis in Zentimetern.
-// Prinzip: Schallimpuls senden → Echo messen → Zeit in cm umrechnen
+// Ein Ultraschallsensor wie der HC-SR04 sendet zuerst einen kurzen Schallimpuls über den TRIG-Pin.
+// Dieser breitet sich aus, trifft auf ein Hindernis und kommt als Echo zum Sensor zurück.
+// Der ECHO-Pin wird dabei so lange HIGH, wie der Schall für Hin- und Rückweg braucht.
+// Aus dieser gemessenen Zeit wird dann die Entfernung berechnet (ca. duration_us / 58 in cm).
 
 #include "sensors.h"
 #include <avr/io.h>
