@@ -1,86 +1,106 @@
-/*
- * bt.c – Kommunikation mit dem ESP32 über UART
- * =============================================
- *
- * Der ESP32 hostet einen Webserver. Wenn jemand im Browser einen Fahrbefehl
- * drückt, schickt der ESP32 diesen Befehl per UART-Kabel an den Arduino.
- *
- * Was ist UART?
- *   Eine serielle Schnittstelle: Bits wandern nacheinander über eine Leitung.
- *   "Asynchron" = kein gemeinsamer Takt, beide Seiten müssen auf die gleiche
- *   Baudrate (Übertragungsgeschwindigkeit) eingestellt sein.
- *   9600 Baud = 9600 Bits/Sekunde. Format 8N1: 8 Datenbits, kein Paritätsbit, 1 Stoppbit.
- *
- * Verbindung: ESP32 TX (Pin 17) → Arduino RX (PD0). Nur eine Richtung –
- * der Arduino empfängt nur, er sendet nichts zurück.
- *
- * Was ist ein Register?
- *   Eine spezielle Speicherstelle direkt im Chip. Einen Wert hineinschreiben
- *   bedeutet: die Hardware reagiert sofort – kein Umweg über Software-Logik.
- *
- * Bit-Operationen (tauchen überall in AVR-Code auf):
- *   (1 << N)    → Zahl mit genau Bit N gesetzt  (z.B. N=4 → 0b00010000)
- *   REG |= ...  → Bit setzen,   alle anderen unberührt  (bitweises ODER)
- *   REG &= ~... → Bit löschen,  alle anderen unberührt  (bitweises UND + Invertierung)
- */
+// Ein Ultraschallsensor wie der HC-SR04 sendet zuerst einen kurzen Schallimpuls über den TRIG-Pin.
+// Dieser breitet sich aus, trifft auf ein Hindernis und kommt als Echo zum Sensor zurück.
+// Der ECHO-Pin wird dabei so lange HIGH, wie der Schall für Hin- und Rückweg braucht.
+// Aus dieser gemessenen Zeit wird dann die Entfernung berechnet (ca. duration_us / 58 in cm).
 
-#include "bt.h"
+#include "sensors.h"
 #include <avr/io.h>
+#include <util/delay.h>
 
-/*
- * bt_init – UART-Empfänger einmalig beim Start konfigurieren
- *
- * UBRR0 (Baud Rate Register, 16 Bit aufgeteilt in High- und Low-Byte):
- *   Formel: UBRR = F_CPU / (16 × Baudrate) − 1 = 16.000.000 / 153.600 − 1 ≈ 103
- *   103 passt in 8 Bit → UBRR0H = 0, UBRR0L = 103
- *
- * UCSR0B = Control Register B:
- *   RXEN0 schaltet den Empfänger ein. TXEN0 (Sender) bleibt aus –
- *   der Arduino schickt keine Daten zurück.
- *
- * UCSR0C = Control Register C:
- *   UCSZ01 + UCSZ00 beide auf 1 → 8 Datenbits pro Byte (Standard).
- */
-void bt_init(void) {
-  UBRR0H = 0;
-  UBRR0L = 103;
-  UCSR0B = (1 << RXEN0);
-  UCSR0C = (1 << UCSZ01) | (1 << UCSZ00);
-}
+// Pin-Definitionen für TRIG (Senden) und ECHO (Empfangen)
+#define TRIG_PIN PC5
+#define TRIG_DDR DDRC
+#define TRIG_PORT PORTC
 
-/*
- * bt_data_available – Liegt ein empfangenes Byte im Puffer bereit?
- *
- * Blockiert NICHT – gibt sofort zurück ob etwas da ist oder nicht.
- * Das Bit RXC0 im Status-Register UCSR0A wird von der Hardware automatisch
- * auf 1 gesetzt, sobald ein vollständiges Byte empfangen wurde.
- * Rückgabe: Wert > 0 = Byte bereit, 0 = noch nichts angekommen.
- */
-uint8_t bt_data_available(void) {
-  return (UCSR0A & (1 << RXC0));
-}
+#define ECHO_PIN PB4
+#define ECHO_DDR DDRB
+#define ECHO_PORT PORTB
+#define ECHO_PIN_REG PINB  // PIN-Register = lesen ob Pin HIGH oder LOW ist
 
-/*
- * bt_receive – Ein Byte blockierend lesen
- *
- * Wartet bis ein Byte angekommen ist, prüft auf Übertragungsfehler
- * und gibt das Byte zurück. Bei Fehler: Puffer leeren, 0 zurückgeben.
- *
- * Wichtig: Fehlerprüfung MUSS vor dem Lesen von UDR0 passieren,
- * weil das Lesen von UDR0 die Fehlerbits automatisch löscht!
- *   FE0  = Frame Error  – Stoppbit fehlt → falsche Baudrate oder Kabeldefekt
- *   DOR0 = Data OverRun – Byte verloren weil Puffer bereits voll war
- *   UPE0 = Parity Error – Paritätsfehler (bei 8N1 nicht aktiv, trotzdem geprüft)
- *
- * (void)UDR0: Liest den Puffer und wirft das Ergebnis weg.
- * Das "(void)" sagt dem Compiler, dass das Absicht ist.
- */
-uint8_t bt_receive(void) {
-  while (!(UCSR0A & (1 << RXC0)))
-    ;
-  if (UCSR0A & ((1 << FE0) | (1 << DOR0) | (1 << UPE0))) {
-    (void)UDR0;
-    return 0;
+#define TIMEOUT_US 3000      // Maximale Wartezeit in Mikrosekunden
+#define MAX_DISTANCE_CM 100  // Alles über 100 cm wird ignoriert
+#define MIN_DISTANCE_CM 2    // Alles unter 2 cm ist zu nah (Messartefakt)
+#define NUM_MEASUREMENTS 1   // Anzahl Messungen pro read_distance()-Aufruf
+
+// Wartet bis der Echo-Pin auf HIGH geht (Schall kommt zurück)
+// Gibt 0 zurück wenn Timeout erreicht wurde (kein Echo)
+static uint8_t wait_for_echo_high(uint16_t timeout_us) {
+  while (!(ECHO_PIN_REG & (1 << ECHO_PIN))) {  // Solange ECHO noch LOW ist
+    if (timeout_us == 0) return 0;             // Zu lange gewartet → Fehler
+    _delay_us(1);
+    timeout_us--;
   }
-  return UDR0;
+  return 1;  // Echo ist HIGH → Schall kommt zurück
+}
+
+// Initialisiert die Sensor-Pins
+void sensor_init(void) {
+  TRIG_DDR |= (1 << TRIG_PIN);    // TRIG als Ausgang (wir senden)
+  TRIG_PORT &= ~(1 << TRIG_PIN);  // TRIG startet auf LOW
+
+  ECHO_DDR &= ~(1 << ECHO_PIN);   // ECHO als Eingang (wir empfangen)
+  ECHO_PORT &= ~(1 << ECHO_PIN);  // Kein interner Pull-up
+
+  _delay_ms(50);  // Sensor braucht kurz zum Hochfahren
+}
+
+// Führt eine Ultraschallmessung durch und gibt die Laufzeit in µs zurück
+// Gibt 0 zurück bei Fehler oder Timeout
+uint16_t ultrasonic_measure_us(void) {
+  uint16_t duration_us = 0;
+
+  // Schritt 1: TRIG kurz LOW setzen um sauberen Startzustand zu haben
+  TRIG_PORT &= ~(1 << TRIG_PIN);
+  _delay_ms(5);
+
+  // Schritt 2: 10 µs langen HIGH-Impuls senden → Sensor startet Messung
+  TRIG_PORT |= (1 << TRIG_PIN);
+  _delay_us(10);
+  TRIG_PORT &= ~(1 << TRIG_PIN);
+
+  // Schritt 3: Warten bis Echo HIGH wird (Schall wurde gesendet)
+  if (!wait_for_echo_high(TIMEOUT_US)) return 0;  // Kein Echo → Fehler
+
+  // Schritt 4: Zählen wie lange Echo HIGH bleibt = Laufzeit des Schalls
+  while (ECHO_PIN_REG & (1 << ECHO_PIN)) {
+    _delay_us(1);
+    duration_us++;
+    if (duration_us >= TIMEOUT_US) return 0;  // Zu lange → Fehler
+  }
+
+  return duration_us;  // Laufzeit in Mikrosekunden zurückgeben
+}
+
+// Rechnet die Laufzeit in Zentimeter um
+// Gibt -1 zurück bei ungültiger Messung
+int ultrasonic_distance_cm(void) {
+  uint16_t duration_us = ultrasonic_measure_us();
+  if (duration_us == 0) return -1;  // Keine gültige Messung
+
+  // Schall braucht ~58 µs pro cm (Hin- UND Rückweg zusammen)
+  int distance_cm = duration_us / 58;
+
+  // Messung außerhalb des sinnvollen Bereichs → ungültig
+  if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM) return -1;
+
+  return distance_cm;
+}
+
+// Öffentliche Funktion: Gibt die Entfernung in cm zurück
+// Macht NUM_MEASUREMENTS Messungen und mittelt gültige Werte
+// Gibt -1 zurück wenn keine einzige Messung gültig war
+int read_distance(void) {
+  int sum = 0, valid_count = 0;
+
+  for (uint8_t i = 0; i < NUM_MEASUREMENTS; i++) {
+    int dist = ultrasonic_distance_cm();
+    if (dist > 0) {  // Nur gültige Messungen mitzählen
+      sum += dist;
+      valid_count++;
+    }
+    _delay_ms(10);  // Kurze Pause zwischen Messungen
+  }
+
+  // Kein einziger gültiger Wert → -1, sonst Durchschnitt
+  return (valid_count == 0) ? -1 : sum / valid_count;
 }
