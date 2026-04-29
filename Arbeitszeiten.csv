@@ -1,0 +1,59 @@
+Datum,Person,Tätigkeit,Beschreibung,Stunden
+15.01.2026,Gaba,Recherche,Recherche zu DC-Motoren Motortreibern und Mikrocontrollern,2.0
+15.01.2026,Kainz,Recherche,Recherche zu Ultraschall-Sensoren und Bluetooth-Lösungen,2.0
+17.01.2026,Gaba,Planung,Konzept für Roboter-Aufbau und benötigte Komponenten erstellt,1.5
+17.01.2026,Kainz,Planung,Stückliste erstellt und Bauteile bestellt,1.5
+22.01.2026,Gaba,Hardware-Aufbau,Erste Verkabelung — Arduino + 1 Motor + L298N getestet,2.5
+22.01.2026,Kainz,Hardware-Aufbau,Pin-Belegung dokumentiert Stückliste vervollständigt,2.0
+24.01.2026,Gaba,Coding — motors.c,Erste Version der Motorsteuerung — vorwärts/rückwärts/stop,3.0
+24.01.2026,Kainz,Coding — Makefile,Makefile für Build und Flash über WSL eingerichtet,2.0
+29.01.2026,Gaba,Coding — motors.c,PWM mit Timer 1 implementiert für Geschwindigkeitsregelung,3.5
+29.01.2026,Kainz,Hardware-Test,Alle 4 Motoren angeschlossen und einzeln getestet,2.5
+31.01.2026,Gaba,Debugging,Falsch verkabelte IN-Pins gefunden — ein Motor drehte rückwärts,1.5
+31.01.2026,Kainz,Debugging,Stromproblem mit 5V vom Arduino — Umstellung auf 7V Batterie,2.0
+05.02.2026,Gaba,Coding — sensors.c,HC-SR04 Treiber implementiert mit TRIG/ECHO,3.0
+05.02.2026,Kainz,Coding — sensors.c,Distanzberechnung getestet und kalibriert,2.0
+07.02.2026,Gaba,Coding — main.c,State-Machine für autonomen Modus erstellt,3.5
+07.02.2026,Kainz,Hardware-Test,Sensor an verschiedenen Hindernissen getestet,2.0
+12.02.2026,Gaba,Debugging,Sensor blieb nach mehreren Messungen hängen — Reset-Delay hinzugefügt,2.0
+12.02.2026,Kainz,Coding — main.c,Timer 0 als 1ms-Taktgeber für State-Machine eingebaut,2.5
+14.02.2026,Gaba,Coding — bt.c,UART-Empfänger für Bluetooth-Kommunikation implementiert,2.5
+14.02.2026,Kainz,ESP32,ESP32 mit Bluepad32 Bibliothek eingerichtet,3.0
+19.02.2026,Gaba,Coding — ESP32,Protokoll für 5-Byte Pakete zwischen ESP32 und Arduino erstellt,3.0
+19.02.2026,Kainz,Hardware-Test,Erste Bluetooth-Verbindung mit PS5-Controller getestet,2.5
+21.02.2026,Gaba,Debugging,ESP32 verlor Verbindung — forgetBluetoothKeys entfernt,1.5
+21.02.2026,Kainz,Debugging,Stromproblem ESP32 — Umstellung von 3.3V auf 5V Pin,2.0
+26.02.2026,Gaba,Coding — main.c,Manueller Modus mit Joystick-Steuerung implementiert,3.0
+26.02.2026,Kainz,Coding — ESP32,L2/R2 für vor/zurück und Stick für Kurven konfiguriert,2.5
+28.02.2026,Gaba,Erweiterung,PWM auf Timer 2 erweitert für 4 unabhängige Motoren,3.5
+28.02.2026,Kainz,Coding — motors.c,Kurvenfunktionen verbessert — engere Kurven mit speed/4,2.0
+05.03.2026,Gaba,Debugging,Pin-Konflikt zwischen Sensor und PWM gefunden — TRIG auf A5 verschoben,2.5
+05.03.2026,Kainz,Hardware-Test,Komplettes System mit allen Komponenten getestet,2.0
+07.03.2026,Gaba,Coding — main.c,Modus-Wechsel über X-Taste am Controller implementiert,2.0
+07.03.2026,Kainz,Coding — ESP32,Edge-Detection für X-Taste damit nicht dauerhaft gesendet wird,1.5
+12.03.2026,Gaba,Erweiterung,Drehrichtung wechselt nur bei umfahrenem Hindernis,2.5
+12.03.2026,Kainz,Test,Roboter fährt durch verschiedene Räume — autonom getestet,2.0
+14.03.2026,Gaba,Erweiterung,AUTO_PAUSE Zustand mit erneuter Messung implementiert,2.0
+14.03.2026,Kainz,Hardware-Test,Verhalten an Wänden getestet — keine Endlosschleife mehr,1.5
+19.03.2026,Gaba,Versuch — Webserver,WLAN-Webserver auf ESP32 als Alternative zu Bluetooth getestet,3.0
+19.03.2026,Kainz,Versuch — Webserver,HTML-Steuerseite mit Buttons erstellt — zu hohe Latenz,2.5
+21.03.2026,Gaba,Entscheidung,Webserver verworfen — zurück zu Bluetooth,0.5
+21.03.2026,Kainz,Optimierung,Bluetooth-Latenz reduziert — Timeout von 100ms auf 50ms,1.5
+26.03.2026,Gaba,Verkabelung,Komplette Verkabelung neu verlegt und sauber strukturiert,3.0
+26.03.2026,Kainz,Verkabelung,Stromverteilung über gemeinsame Masse-Schiene aufgebaut,2.5
+28.03.2026,Gaba,Test,Langer Test über mehrere Stunden — Stabilität geprüft,2.0
+28.03.2026,Kainz,Test,Reaktionszeit des Controllers gemessen und protokolliert,1.5
+02.04.2026,Gaba,Dokumentation,Code-Kommentare in allen 4 C-Dateien ergänzt,3.5
+02.04.2026,Kainz,Dokumentation,Pin-Layout CSV erstellt und gepflegt,2.0
+04.04.2026,Gaba,Dokumentation,AVR-Befehle und Abkürzungen dokumentiert,2.5
+04.04.2026,Kainz,Verkabelung,Verkabelungs-PDF mit allen Anschlüssen erstellt,2.0
+09.04.2026,Gaba,GitHub,GitHub Repository eingerichtet und Code hochgeladen,1.5
+09.04.2026,Kainz,GitHub,README.md geschrieben mit Anleitung zum Aufbau,1.5
+11.04.2026,Gaba,Finaler Test,Kompletter Funktionstest aller Modi — alles funktioniert,2.5
+11.04.2026,Kainz,Finaler Test,Verschiedene Hindernis-Szenarien durchgespielt,2.0
+16.04.2026,Gaba,Dokumentation,Code-Dokumentation als Word-Datei erstellt,3.0
+16.04.2026,Kainz,Dokumentation,Bauteilbeschreibungen verfasst,2.5
+23.04.2026,Gaba,Protokoll,Projekt-Protokoll geschrieben — Hardware und Software Kapitel,3.5
+23.04.2026,Kainz,Protokoll,Projekt-Protokoll geschrieben — Idee und Entwicklungsverlauf,3.0
+28.04.2026,Gaba,Abschluss,Finale Korrekturen am Code und Protokoll,2.0
+28.04.2026,Kainz,Abschluss,Stückliste finalisiert und alle Dateien zusammengestellt,1.5
