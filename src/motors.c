@@ -1,36 +1,3 @@
-/*
- * ============================================================
- *  motors.c – Motorsteuerung für 4WD-Roboter
- * ============================================================
- *
- *  Was macht dieser Code?
- *  ─────────────────────
- *  Steuert 4 DC-Motoren über zwei L298N Motortreiber.
- *  L298N = H-Brücke: kann Strom in beide Richtungen durch Motor schicken
- *  → Vorwärts und Rückwärts möglich.
- *  Geschwindigkeit wird über PWM geregelt.
- *
- *  Abkürzungen:
- *  ─────────────
- *  FL   = Front Left   – vorne links
- *  RL   = Rear Left    – hinten links
- *  FR   = Front Right  – vorne rechts
- *  RR   = Rear Right   – hinten rechts
- *  PWM  = Pulse Width Modulation – Pin schnell ein/aus schalten
- *         OCR-Wert 255 = immer ein = Vollgas, 0 = aus = stop
- *  DDR  = Data Direction Register – legt fest ob Pin Aus- oder Eingang ist
- *  PORT = Ausgabe-Register – setzt Pin auf HIGH oder LOW
- *  OC1A = Output Compare 1A – PWM-Ausgang von Timer 1, Kanal A (Pin 9)
- *  OC1B = Output Compare 1B – PWM-Ausgang von Timer 1, Kanal B (Pin 10)
- *  OC2A = Output Compare 2A – PWM-Ausgang von Timer 2, Kanal A (Pin 11)
- *  OC2B = Output Compare 2B – PWM-Ausgang von Timer 2, Kanal B (Pin 3)
- *  TCCR = Timer Counter Control Register – konfiguriert den Timer
- *  COM  = Compare Output Mode – aktiviert PWM-Ausgang am Pin
- *  WGM  = Waveform Generation Mode – wählt den Timer-Betriebsmodus
- *  CS   = Clock Select – wählt den Prescaler (Vorteiler) des Timers
- * ============================================================
- */
-
 #include "motors.h"
 #include <avr/io.h>
 #include <util/delay.h>
@@ -62,8 +29,9 @@
 #define RR_PORT PORTC
 
 /* ── PWM-Pins ───────────────────────────────────────────────────────────────
- * Hardware-PWM funktioniert NUR an speziellen Pins die direkt mit
- * dem Timer-Modul verbunden sind. Diese Pins sind fest vorgegeben.
+PWM-Funktion funktioniert nur auf bestimmten Pins,
+die mit OC1A, OC1B, OC2A oder OC2B bezeichnet sind.
+Diese Pins sind fest vorgegeben.
  */
 #define PWM_FL_PIN PB1 /* OC1A = Pin 9  → ENA L298N #1 (linke Motoren) */
 #define PWM_RL_PIN PB2 /* OC1B = Pin 10 → ENB L298N #1 */
@@ -76,22 +44,12 @@
 
 #define MOTOR_SPEED_DEFAULT 255 /* Startgeschwindigkeit (Maximum = 255) */
 
-/* MotorDirection: eigener Datentyp mit 3 erlaubten Werten
- * static = nur in dieser Datei sichtbar (intern) */
 typedef enum { MOTOR_STOP, MOTOR_BACKWARD, MOTOR_FORWARD } MotorDirection;
 
 /* Aktuelle Geschwindigkeit für alle Motoren (0–255)
  * static = nur in dieser Datei sichtbar */
 static uint8_t current_speed = MOTOR_SPEED_DEFAULT;
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * FUNKTION: set_left_motors (intern)
- * ───────────────────────────────────────────────────────────────────────────
- * Setzt die Fahrtrichtung der linken zwei Motoren (FL + RL).
- * Bit-Operationen:
- *   PORT |=  (1 << PIN) → Pin auf HIGH setzen (| = bitweises ODER)
- *   PORT &= ~(1 << PIN) → Pin auf LOW setzen  (& = bitweises UND, ~ = invertieren)
- * ═══════════════════════════════════════════════════════════════════════════ */
 static void set_left_motors(MotorDirection dir) {
   switch (dir) {
     case MOTOR_STOP:
@@ -115,12 +73,6 @@ static void set_left_motors(MotorDirection dir) {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * FUNKTION: set_right_motors (intern)
- * ───────────────────────────────────────────────────────────────────────────
- * Setzt die Fahrtrichtung der rechten zwei Motoren (FR + RR).
- * Gleiche Logik wie set_left_motors, nur für andere Pins.
- * ═══════════════════════════════════════════════════════════════════════════ */
 static void set_right_motors(MotorDirection dir) {
   switch (dir) {
     case MOTOR_STOP:
@@ -144,24 +96,6 @@ static void set_right_motors(MotorDirection dir) {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * FUNKTION: motor_pwm_init (intern)
- * ───────────────────────────────────────────────────────────────────────────
- * Was macht sie?
- *   Konfiguriert Timer 1 und Timer 2 für Hardware-PWM.
- *   Timer 1 steuert linke Motoren (FL, RL) über Pin 9 und 10.
- *   Timer 2 steuert rechte Motoren (FR, RR) über Pin 11 und 3.
- *
- * Timer 1 – linke Motoren:
- *   COM1A1+COM1B1 = PWM-Ausgang an OC1A und OC1B aktivieren
- *   WGM10+WGM12   = Phase Correct PWM, 8-Bit (0–255)
- *   CS11          = Prescaler 8 → 16MHz/8 = 2MHz Timer-Takt
- *
- * Timer 2 – rechte Motoren:
- *   COM2A1+COM2B1 = PWM-Ausgang aktivieren
- *   WGM20+WGM21   = Fast PWM, 8-Bit
- *   CS21          = Prescaler 8
- * ═══════════════════════════════════════════════════════════════════════════ */
 static void motor_pwm_init(void) {
   /* Timer 1: linke Motoren (Pin 9 = OC1A = FL, Pin 10 = OC1B = RL) */
   TCCR1A = (1 << COM1A1) | (1 << COM1B1) | (1 << WGM10); /* PWM aktivieren */
@@ -175,13 +109,6 @@ static void motor_pwm_init(void) {
   PWM_RR_DDR |= (1 << PWM_RR_PIN); /* Pin 3  als Ausgang */
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * FUNKTION: motor_init
- * ───────────────────────────────────────────────────────────────────────────
- * Was macht sie?
- *   Einmalige Initialisierung beim Programmstart.
- *   Setzt alle Richtungspins als Ausgänge, startet PWM, stoppt alle Motoren.
- * ═══════════════════════════════════════════════════════════════════════════ */
 void motor_init(void) {
   FL_DDR |= (1 << FL_IN1_PIN) | (1 << FL_IN2_PIN); /* FL-Pins → Ausgänge */
   RL_DDR |= (1 << RL_IN3_PIN) | (1 << RL_IN4_PIN); /* RL-Pins → Ausgänge */
@@ -261,12 +188,6 @@ void motor_backward_curve_left(void) {
   OCR2A = OCR2B = current_speed;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * FUNKTION: motor_set_speed
- * ───────────────────────────────────────────────────────────────────────────
- * Setzt die Geschwindigkeit aller Motoren (0 = stop, 255 = Vollgas).
- * Speichert den Wert in current_speed UND schreibt ihn sofort in alle OCR.
- * ═══════════════════════════════════════════════════════════════════════════ */
 void motor_set_speed(uint8_t speed) {
   current_speed = speed;                 /* Für zukünftige Fahrbefehle speichern */
   OCR1A = OCR1B = OCR2A = OCR2B = speed; /* Sofort auf laufende Motoren anwenden */
