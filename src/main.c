@@ -49,11 +49,11 @@ ISR(TIMER0_COMPA_vect) {
 void toggle_mode(void) {
   if (current_mode == MODE_AUTONOMOUS) { /* War autonom → wechsle zu manuell */
     current_mode = MODE_MANUEL;
-    motor_set_speed(220); /* Geschwindigkeit für manuellen Modus */
+    motor_set_speed(255); /* Geschwindigkeit für manuellen Modus */
   } else {                /* War manuell → wechsle zu autonom */
     current_mode = MODE_AUTONOMOUS;
     auto_state   = AUTO_FORWARD; /* State-Machine von vorne beginnen */
-    motor_set_speed(220);
+    motor_set_speed(255);
     motor_stop(); /* Sofort stoppen damit der Roboter nicht unkontrolliert weiterfährt */
   }
 }
@@ -208,7 +208,7 @@ int main(void) {
 
   sei();                /* Alle Interrupts global einschalten – NACH den init-Funktionen */
   _delay_ms(1000);      /* 1 Sekunde warten: ESP32 und Sensor brauchen Zeit zum Starten */
-  motor_set_speed(200); /* Startgeschwindigkeit auf 200 von 255 setzen */
+  motor_set_speed(255); /* Startgeschwindigkeit auf 255 von 255 setzen */
 
   while (1) {            /* Endlosschleife – läuft solange der Arduino Strom hat */
     check_mode_switch(); /* Wurde X-Taste gedrückt? */
