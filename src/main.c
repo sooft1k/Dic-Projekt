@@ -170,8 +170,8 @@ void autonomous_mode(void) {
       if (d > 0 && d < OBSTACLE_DISTANCE_CM) {  // Hindernis erkannt
         motor_stop();                           // Sofort anhalten
         auto_state = AUTO_REVERSE;              // Fährt Rückwärts
-        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {     //
-          state_timer_ms = 800;                 // Timer auf 800ms setzen
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+          state_timer_ms = 800;  // Timer auf 800ms setzen
         }
       } else {
         motor_forward();  // Wenn kein Hindernis erkannt wurde fährt es weiter vorwärts
